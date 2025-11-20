@@ -23,7 +23,6 @@ public class ProducerRepository {
              PreparedStatement statement = createPreparedStatement(connection, sql, s);
              ResultSet resultSet = statement.executeQuery();) {
 
-
             while (resultSet.next()) {
                 Producer producer = Producer
                         .builder()
@@ -34,7 +33,7 @@ public class ProducerRepository {
             }
 
         } catch (SQLException | IOException e) {
-            e.printStackTrace();
+            logger.warn("Connection failed, check you mysql client");
         }
         return producers;
 
@@ -101,4 +100,24 @@ public class ProducerRepository {
         preparedStatement.setInt(1, id);
         return preparedStatement;
     }
+
+    public static void insert(Producer producer) {
+        logger.info("Adding to table..." + producer);
+        try (Connection connection = ConnectionDataBase.getConnection();
+             PreparedStatement statement = createPreparedStatementInsert(connection, producer)) {
+            statement.execute();
+        } catch (SQLException | IOException e) {
+            logger.warn("INSERT ERROR");
+            e.printStackTrace();
+        }
+    }
+
+    public static PreparedStatement createPreparedStatementInsert(Connection connection, Producer producer) throws SQLException {
+        String sql = "INSERT INTO anime_store.producer (name) VALUES (?);";
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        preparedStatement.setString(1, producer.getName());
+        return preparedStatement;
+    }
 }
+
+
