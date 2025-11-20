@@ -3,7 +3,6 @@ package services;
 import Repository.ProducerRepository;
 import domain.Producer;
 
-import java.util.List;
 import java.util.Scanner;
 
 public class ProducerServices {
@@ -11,22 +10,23 @@ public class ProducerServices {
 
     public static void choicesMenu(int num) {
         switch (num) {
-            case 1:
-                findByName();
-                break;
-            case 2:
-                delete();
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid option");
+            case 1 -> findByName();
+            case 2 -> delete();
+            case 3 -> insert();
+            default -> throw new IllegalArgumentException("Invalid option");
         }
     }
 
     private static void findByName() {
         System.out.println("Type the name or press ENTER to show all:");
         String name = SCANNER.nextLine();
-        List<Producer> producers = ProducerRepository.findByName(name);
-        producers.forEach(p -> System.out.printf("[%d] - %s%n",p.getId(),p.getName()));
+        ProducerRepository.findByName(name)
+                .forEach(p -> System.out.printf("[%d] - %s%n", p.getId(), p.getName()));
+    }
+
+
+    public static boolean isNum(String s) {
+        return s != null && s.matches("\\d+");
     }
 
     private static void delete() {
