@@ -46,6 +46,8 @@ public class ProducerServices {
 
         if ("y".equalsIgnoreCase(userChoice)) {
             ProducerRepository.delete(id);
+        }else {
+            return;
         }
 
     }
