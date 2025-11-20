@@ -31,8 +31,16 @@ public class ProducerServices {
 
     private static void delete() {
         System.out.println("Type one of the ID bellow to delete or 0 to back");
-        int id = Integer.parseInt(SCANNER.nextLine());
+        String input = SCANNER.nextLine();
+
+        if (!isNum(input)) {
+            System.out.println("Invalid value, enter only numbers");
+            return;
+        }
+
+        int id = Integer.parseInt(input);
         if (id == 0) return;
+
         boolean exists = ProducerRepository.findById(id);
 
         if (!exists) {
@@ -40,16 +48,22 @@ public class ProducerServices {
             return;
         }
 
-
         System.out.println("Are you sure? y/n");
         String userChoice = SCANNER.nextLine();
 
         if ("y".equalsIgnoreCase(userChoice)) {
             ProducerRepository.delete(id);
-        }else {
+        } else {
             return;
         }
 
+    }
+
+    public static void insert() {
+        System.out.println("Name of the Producer: ");
+        String name = SCANNER.nextLine();
+        Producer build = Producer.builder().name(name).build();
+        ProducerRepository.insert(build);
     }
 
 
