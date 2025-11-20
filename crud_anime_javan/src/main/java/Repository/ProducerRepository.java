@@ -6,10 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,15 +32,73 @@ public class ProducerRepository {
                         .build();
                 producers.add(producer);
             }
+
         } catch (SQLException | IOException e) {
-            logger.warn("CODE ERROR");
+            e.printStackTrace();
         }
         return producers;
+
     }
 
     public static PreparedStatement createPreparedStatement(Connection connection, String sql, String name) throws SQLException {
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
-        preparedStatement.setString(1, name);
+        preparedStatement.setString(1, "%" + name + "%");
+        return preparedStatement;
+    }
+
+
+    public static void delete(int id) {
+        try (Connection connection = ConnectionDataBase.getConnection()) {
+            PreparedStatement ps = createPreparedStatementDelete(connection, id);
+            ps.execute();
+            logger.info("Delete successfully! ");
+            System.out.println();
+        } catch (SQLException | IOException e) {
+            logger.warn("DELETE ERROR");
+        }
+    }
+
+    public static PreparedStatement createPreparedStatementDelete(Connection connection, Integer id) throws SQLException {
+        String sql = "DELETE FROM anime_store.producer WHERE id = ?;";
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        preparedStatement.setInt(1, id);
+        return preparedStatement;
+    }
+
+    public static boolean findById(Integer id) {
+
+        List<Producer> producers = new ArrayList<>();
+
+        try (Connection connection = ConnectionDataBase.getConnection();
+             PreparedStatement statement = createPreparedStatementId(connection, id);
+             ResultSet resultSet = statement.executeQuery();) {
+
+
+            if (!resultSet.next()) {
+                return false;
+            }
+
+            Producer producer = Producer
+                    .builder()
+                    .id(resultSet.getInt("id"))
+                    .name(resultSet.getString("name"))
+                    .build();
+            producers.add(producer);
+
+            System.out.println(producer);
+            return true;
+
+        } catch (SQLException | IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+    }
+
+    public static PreparedStatement createPreparedStatementId(Connection connection, Integer id) throws SQLException {
+        String sql = "SELECT * FROM anime_store.producer WHERE id = ?;";
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        preparedStatement.setInt(1, id);
         return preparedStatement;
     }
 }
