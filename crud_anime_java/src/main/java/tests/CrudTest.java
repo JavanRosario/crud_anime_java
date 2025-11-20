@@ -21,7 +21,7 @@ public class CrudTest {
     private static void menu() {
         System.out.println("====================================");
         System.out.println("Type the number of your operation");
-        System.out.println("1. Search for Producer");
+        System.out.println("1. Search for Producer | Show all");
         System.out.println("2. Delete Producer");
         System.out.println("3. Insert Producer");
         System.out.println("0. For Exit");
