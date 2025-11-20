@@ -9,12 +9,13 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class ProducerRepository {
     public static final Logger logger = LoggerFactory.getLogger(ProducerRepository.class);
 
     public static List<Producer> findByName(String s) {
-        logger.info("Finding all from Producers by name: ");
+        logger.info("Finding all from Producers by name... ");
 
         String sql = "SELECT * FROM anime_store.producer WHERE name LIKE ?;";
         List<Producer> producers = new ArrayList<>();
@@ -22,6 +23,11 @@ public class ProducerRepository {
         try (Connection connection = ConnectionDataBase.getConnection();
              PreparedStatement statement = createPreparedStatement(connection, sql, s);
              ResultSet resultSet = statement.executeQuery();) {
+
+            if (!resultSet.next()) {
+                logger.warn("Name not find...");
+                return new ArrayList<>();
+            }
 
             while (resultSet.next()) {
                 Producer producer = Producer
@@ -33,7 +39,7 @@ public class ProducerRepository {
             }
 
         } catch (SQLException | IOException e) {
-            logger.warn("Connection failed, check you mysql client");
+            logger.warn("Connection failed, check your MySQL client");
         }
         return producers;
 
@@ -64,7 +70,7 @@ public class ProducerRepository {
         return preparedStatement;
     }
 
-    public static boolean findById(Integer id) {
+    public static boolean findByIdToShow(Integer id) {
 
         List<Producer> producers = new ArrayList<>();
 
@@ -94,6 +100,31 @@ public class ProducerRepository {
 
     }
 
+    public static Optional<Producer> findByIdToUpdate(Integer id) {
+
+        List<Producer> producers = new ArrayList<>();
+        try (Connection connection = ConnectionDataBase.getConnection();
+             PreparedStatement statement = createPreparedStatementId(connection, id);
+             ResultSet resultSet = statement.executeQuery()) {
+
+            if (!resultSet.next()) return Optional.empty();
+
+            Optional<Producer> build = Optional.of(Producer
+                    .builder()
+                    .id(resultSet.getInt("id"))
+                    .name(resultSet.getString("name"))
+                    .build());
+            System.out.println("####");
+            System.out.println("You ID name is: "+build.get().getName());
+            return build;
+
+
+        } catch (SQLException | IOException e) {
+            e.printStackTrace();
+        }
+        return Optional.empty();
+    }
+
     public static PreparedStatement createPreparedStatementId(Connection connection, Integer id) throws SQLException {
         String sql = "SELECT * FROM anime_store.producer WHERE id = ?;";
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -118,6 +149,32 @@ public class ProducerRepository {
         preparedStatement.setString(1, producer.getName());
         return preparedStatement;
     }
+
+
+    public static void update(Producer producer) {
+
+        try (Connection connection = ConnectionDataBase.getConnection();
+             PreparedStatement statement = createPreparedStatementUpdate(connection, producer)) {
+            statement.executeUpdate();
+        } catch (SQLException | IOException e) {
+            logger.warn("UPDATE ERROR");
+        }
+    }
+
+    public static PreparedStatement createPreparedStatementUpdate(Connection connection, Producer producer) throws SQLException {
+        String sql = "UPDATE anime_store.producer SET name = ? WHERE id = ?;";
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        preparedStatement.setString(1, producer.getName());
+        preparedStatement.setInt(2, producer.getId());
+        return preparedStatement;
+    }
+
+
 }
+
+
+
+
+
 
 
