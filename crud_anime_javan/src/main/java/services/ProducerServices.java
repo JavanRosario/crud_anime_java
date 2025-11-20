@@ -7,12 +7,15 @@ import java.util.List;
 import java.util.Scanner;
 
 public class ProducerServices {
-    private static Scanner scanner = new Scanner(System.in);
+    private static final Scanner SCANNER = new Scanner(System.in);
 
-    public static void makeMenu(int num) {
+    public static void choicesMenu(int num) {
         switch (num) {
             case 1:
                 findByName();
+                break;
+            case 2:
+                delete();
                 break;
             default:
                 throw new IllegalArgumentException("Invalid option");
@@ -20,11 +23,32 @@ public class ProducerServices {
     }
 
     private static void findByName() {
-        System.out.println("Type the name:");
-        String name = scanner.nextLine();
+        System.out.println("Type the name or press ENTER to show all:");
+        String name = SCANNER.nextLine();
         List<Producer> producers = ProducerRepository.findByName(name);
-        for (int i = 0; i < producers.size(); i++) {
-            System.out.printf("[%d] - %s%n", i, producers.get(i).getName());
-        }
+        producers.forEach(p -> System.out.printf("[%d] - %s%n",p.getId(),p.getName()));
     }
+
+    private static void delete() {
+        System.out.println("Type one of the ID bellow to delete or 0 to back");
+        int id = Integer.parseInt(SCANNER.nextLine());
+        if (id == 0) return;
+        boolean exists = ProducerRepository.findById(id);
+
+        if (!exists) {
+            System.out.println("Invalid id or not exists. Returning to menu...");
+            return;
+        }
+
+
+        System.out.println("Are you sure? s/n");
+        String userChoice = SCANNER.nextLine();
+
+        if ("s".equalsIgnoreCase(userChoice)) {
+            ProducerRepository.delete(id);
+        }
+
+    }
+
+
 }
