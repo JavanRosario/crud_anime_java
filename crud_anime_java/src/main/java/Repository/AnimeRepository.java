@@ -94,12 +94,31 @@ public class AnimeRepository {
         return preparedStatement;
     }
 
+
+    public static PreparedStatement createPreparedStatementIdToShow(Connection connection, Integer id) throws SQLException {
+        String sql = """
+                SELECT
+                    a.id,
+                    a.name,
+                    a.episodes,
+                    a.producer_id,
+                    p.name AS producer_name
+                FROM anime_store.anime a
+                INNER JOIN anime_store.producer p
+                    ON a.producer_id = p.id
+                WHERE a.id = ?;
+                """;
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        preparedStatement.setInt(1, id);
+        return preparedStatement;
+    }
+
     public static boolean findByIdToShow(Integer id) {
 
         List<Anime> animes = new ArrayList<>();
 
         try (Connection connection = ConnectionDataBase.getConnection();
-             PreparedStatement statement = createPreparedStatementId(connection, id);
+             PreparedStatement statement = createPreparedStatementIdToShow(connection, id);
              ResultSet resultSet = statement.executeQuery();) {
 
 
@@ -107,31 +126,6 @@ public class AnimeRepository {
                 return false;
             }
 
-            Anime anime = Anime
-                    .builder()
-                    .id(resultSet.getInt("id"))
-                    .name(resultSet.getString("name"))
-                    .build();
-            animes.add(anime);
-
-            System.out.println(anime);
-            return true;
-
-        } catch (SQLException | IOException e) {
-            e.printStackTrace();
-            return false;
-        }
-
-    }
-
-    public static Optional<Anime> findByIdToUpdate(Integer id) {
-
-        List<Anime> animes = new ArrayList<>();
-        try (Connection connection = ConnectionDataBase.getConnection();
-             PreparedStatement statement = createPreparedStatementId(connection, id);
-             ResultSet resultSet = statement.executeQuery()) {
-
-            if (!resultSet.next()) return Optional.empty();
             Producer producer = Producer.builder()
                     .name(resultSet.getString("producer_name"))
                     .id(resultSet.getInt("producer_id"))
@@ -144,14 +138,19 @@ public class AnimeRepository {
                     .episodes(resultSet.getInt("episodes"))
                     .producer(producer)
                     .build();
-            return Optional.of(anime);
+            animes.add(anime);
+
+            System.out.println(anime);
 
 
+            return true;
         } catch (SQLException | IOException e) {
             e.printStackTrace();
+            return false;
         }
-        return Optional.empty();
+
     }
+
 
     public static PreparedStatement createPreparedStatementId(Connection connection, Integer id) throws SQLException {
         String sql = """
@@ -164,7 +163,7 @@ public class AnimeRepository {
                 FROM anime_store.anime a
                 INNER JOIN anime_store.producer p
                     ON a.producer_id = p.id
-                WHERE a.name = ?;
+                WHERE a.id = ?;
                 """;
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
         preparedStatement.setInt(1, id);
@@ -178,7 +177,6 @@ public class AnimeRepository {
             statement.execute();
         } catch (SQLException | IOException e) {
             logger.warn("INSERT ERROR");
-            e.printStackTrace();
         }
     }
 
@@ -211,6 +209,36 @@ public class AnimeRepository {
         return preparedStatement;
     }
 
+    public static Optional<Anime> findByIdToUpdate(Integer id) {
+
+        List<Anime> animes = new ArrayList<>();
+        try (Connection connection = ConnectionDataBase.getConnection();
+             PreparedStatement statement = createPreparedStatementId(connection, id);
+             ResultSet resultSet = statement.executeQuery()) {
+
+            if (!resultSet.next()) return Optional.empty();
+            Producer producer = Producer.builder()
+                    .name(resultSet.getString("producer_name"))
+                    .id(resultSet.getInt("producer_id"))
+                    .build();
+
+            Anime anime = Anime
+                    .builder()
+                    .id(resultSet.getInt("id"))
+                    .name(resultSet.getString("name"))
+                    .episodes(resultSet.getInt("episodes"))
+                    .producer(producer)
+                    .build();
+            System.out.println("####");
+            System.out.println("You ID name is: "+anime.getName());
+            return Optional.of(anime);
+
+
+        } catch (SQLException | IOException e) {
+            e.printStackTrace();
+        }
+        return Optional.empty();
+    }
 
 }
 
