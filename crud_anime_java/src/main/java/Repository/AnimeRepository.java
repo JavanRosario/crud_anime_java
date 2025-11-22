@@ -40,10 +40,6 @@ public class AnimeRepository {
              PreparedStatement statement = createPreparedStatement(connection, sql, s);
              ResultSet resultSet = statement.executeQuery();) {
 
-            if (!resultSet.next()) {
-                logger.warn("Name not find...");
-                return new ArrayList<>();
-            }
 
             while (resultSet.next()) {
 
@@ -60,6 +56,10 @@ public class AnimeRepository {
                         .producer(producer)
                         .build();
                 animes.add(anime);
+            }
+
+            if (animes.isEmpty()) {
+                logger.warn("Name not find...");
             }
 
         } catch (SQLException | IOException e) {
@@ -230,7 +230,7 @@ public class AnimeRepository {
                     .producer(producer)
                     .build();
             System.out.println("####");
-            System.out.println("You ID name is: "+anime.getName());
+            System.out.println("You ID name is: " + anime.getName());
             return Optional.of(anime);
 
 
