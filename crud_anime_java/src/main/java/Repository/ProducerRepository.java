@@ -23,12 +23,6 @@ public class ProducerRepository {
         try (Connection connection = ConnectionDataBase.getConnection();
              PreparedStatement statement = createPreparedStatement(connection, sql, s);
              ResultSet resultSet = statement.executeQuery();) {
-
-            if (!resultSet.next()) {
-                logger.warn("Name not find...");
-                return new ArrayList<>();
-            }
-
             while (resultSet.next()) {
                 Producer producer = Producer
                         .builder()
@@ -37,6 +31,11 @@ public class ProducerRepository {
                         .build();
                 producers.add(producer);
             }
+            if (producers.isEmpty()) {
+                logger.warn("Name not find...");
+            }
+
+
 
         } catch (SQLException | IOException e) {
             logger.warn("Connection failed, check your MySQL client");
