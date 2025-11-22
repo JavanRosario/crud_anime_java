@@ -106,8 +106,9 @@ public class ProducerServices {
                     .build();
 
             ProducerRepository.update(updated);
+            logger.info("You new value is => |" + updated.getName() + "|");
         }
-        logger.info("You new value is => |" + producer.getName() + "|");
+
     }
 
 }
