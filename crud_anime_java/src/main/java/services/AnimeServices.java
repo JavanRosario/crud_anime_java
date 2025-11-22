@@ -1,6 +1,7 @@
 package services;
 
 import Repository.AnimeRepository;
+import Repository.ProducerRepository;
 import domain.Anime;
 import domain.Producer;
 import org.slf4j.Logger;
@@ -75,16 +76,40 @@ public class AnimeServices {
         String name = SCANNER.nextLine();
 
         System.out.println("Type the number of episodes");
-        int episodes = Integer.parseInt(SCANNER.nextLine());
+        String inputEpisodes = SCANNER.nextLine();
+        if (!isNum(inputEpisodes)) {
+            logger.warn("Invalid value, enter only numbers.");
+            return;
+        }
+        int intEpisodes = Integer.parseInt(inputEpisodes);
 
         System.out.println("Type the id of the producer");
-        Integer id = Integer.parseInt(SCANNER.nextLine());
+        String inputId = SCANNER.nextLine();
+        if (!isNum(inputId)) {
+            logger.warn("Invalid value, enter only numbers.");
+            return;
+        }
+
+
+        int intId = Integer.parseInt(inputId);
+
+        int intProducer = Integer.parseInt(inputId);
+
+        Optional<Producer> producerOptional = ProducerRepository.findByIdToUpdate(intProducer);
+
+        if (producerOptional.isEmpty()) {
+            logger.warn("Producer ID not found: " + intProducer);
+            return;
+        }
+
+        Producer producer = producerOptional.get();
 
         Anime build = Anime
                 .builder()
-                .episodes(episodes)
+                .id(intId)
                 .name(name)
-                .producer(Producer.builder().id(id).build())
+                .episodes(intEpisodes)
+                .producer(producer)
                 .build();
         AnimeRepository.insert(build);
     }
@@ -96,41 +121,48 @@ public class AnimeServices {
         System.out.println("====================================");
 
         System.out.println("Type ID of object you want to update: ");
-        Optional<Anime> optionalProducer = AnimeRepository.findByIdToUpdate(Integer.parseInt(SCANNER.nextLine()));
-
-        if (optionalProducer.isEmpty()) {
-            logger.warn("ID not found!");
+        String idInput = SCANNER.nextLine();
+        if (!isNum(idInput)) {
+            logger.warn("Invalid ID. Enter only numbers!");
             return;
         }
 
-        Anime anime = optionalProducer.get();
+        int id = Integer.parseInt(idInput);
 
-        System.out.println("Type de new name or enter to keep the same");
-        String name = SCANNER.nextLine();
+        Optional<Anime> optionalAnime = AnimeRepository.findByIdToUpdate(id);
+        if (optionalAnime.isEmpty()) {
+            logger.warn("ID not found");
+            return;
+        }
+        Anime anime = optionalAnime.get();
+
+        System.out.println("Type the new name or press Enter to keep the same:");
+        String nameInput = SCANNER.nextLine();
+        String finalName = nameInput.isEmpty() ? anime.getName() : nameInput;
 
         System.out.println("Type the new number of episodes or press Enter to keep the same:");
         String epsInput = SCANNER.nextLine();
-
-        if (name.isEmpty()) {
-            logger.info("No changes, back to menu...");
-            name = anime.getName();
-        }
-        int eps;
+        int finalEpisodes;
 
         if (epsInput.isEmpty()) {
-            logger.info("No changes, back to menu...");
-            eps = anime.getEpisodes();
+            finalEpisodes = anime.getEpisodes();
         } else {
-            eps = Integer.parseInt(epsInput);
+            if (!isNum(epsInput)) {
+                logger.warn("Invalid episodes value. Enter only numbers.");
+                return;
+            }
+            finalEpisodes = Integer.parseInt(epsInput);
         }
+
         Anime updated = Anime.builder()
                 .id(anime.getId())
-                .name(name)
-                .episodes(eps)
+                .name(finalName)
+                .episodes(finalEpisodes)
+                .producer(anime.getProducer())
                 .build();
 
         AnimeRepository.update(updated);
-        logger.info("You new value is => |" + updated.getName() + "|");
+        logger.info("Your new value is => |" + updated.getName() + "| with episodes => " + updated.getEpisodes());
     }
 
 }
