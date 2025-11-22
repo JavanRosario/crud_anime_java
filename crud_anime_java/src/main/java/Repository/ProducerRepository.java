@@ -60,6 +60,7 @@ public class ProducerRepository {
             System.out.println();
         } catch (SQLException | IOException e) {
             logger.warn("DELETE ERROR");
+            e.printStackTrace();
         }
     }
 
@@ -115,7 +116,7 @@ public class ProducerRepository {
                     .name(resultSet.getString("name"))
                     .build());
             System.out.println("####");
-            System.out.println("You ID name is: "+build.get().getName());
+            System.out.println("You ID Producer is: "+build.get().getName());
             return build;
 
 
@@ -133,7 +134,7 @@ public class ProducerRepository {
     }
 
     public static void insert(Producer producer) {
-        logger.info("Adding to table..." + producer);
+        logger.info("Adding to table..." + producer.getName());
         try (Connection connection = ConnectionDataBase.getConnection();
              PreparedStatement statement = createPreparedStatementInsert(connection, producer)) {
             statement.execute();
